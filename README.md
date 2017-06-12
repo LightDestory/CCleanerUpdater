@@ -4,6 +4,9 @@
 ## :large_orange_diamond: Description
 A simple Console tool that help you to keep up to date your CCleaner Free
 
+## :large_orange_diamond: Usage
+CCleanerUpdater.exe [CCleaner's Install Path WITHOUT final "\"]
+
 ## :large_orange_diamond: Features
 - Auto-download requires files (CCleaner setup from Official Server)
 
