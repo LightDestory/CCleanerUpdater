@@ -5,51 +5,62 @@ namespace CCleanerUpdater
     {
         static void Main(string[] args)
         {
-            if(args.Length==0 || args.Length > 1)
+            Updater tool = new Updater();
+            tool.CheckForUpdate(System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString());
+            if (args.Length > 0 && (args[0] == "/help" || args[0] == "/h"))
             {
-                Console.Out.WriteLine("Wrong arguments!\nUsage: CcleanerUpdater.exe [\"CCleaner's Path\"]");
+                Console.Out.WriteLine(tool.getUsage());
+                Console.Out.WriteLine("Languages:\n" +tool.getLangList());
+            }
+            else if (args.Length > 0 && (!args[0].Contains("path=")) && (!args[1].Contains("lang=")))
+            {
+                Console.Out.WriteLine("Wrong arguments!, try CCleanerUpdater.exe /help");
             }
             else
             {
-                Updater program = new Updater();
-                Console.Out.WriteLine("Getting installed version...");
-                if (program.getCurrentVersionFromExe(args[0]))
+                if (args.Length == 0)
                 {
-                    Console.Out.WriteLine("Getting online version...");
-                    if (program.getLatestVersionOnline())
+                    //INSTALL CCLEANER
+                    Console.Out.WriteLine("Opening this tool without arguments will start a installation wizard.\nIf you want to install CCleaner say 'y'\n" +
+                        "If you want to update CCleaner, close the tool and start again with argument '/help' ('n' to close):");
+                    String answer;
+                    do
                     {
-                        Console.Out.WriteLine("Comparing Version...");
-                        if (program.Compare())
+                         answer = Console.ReadLine().ToLower();
+                    } while (!(answer.Equals("y") || answer.Equals("n")));
+
+                    if (answer.Equals("y"))
+                    {
+                        if (!tool.CheckInstall())
                         {
-                            Console.Out.WriteLine("New update found!\nDownloading update...");
-                            program.Download();
-                            Console.Out.WriteLine("Installing update...");
-                            program.Install();
-                            Exit();
+                            Console.Out.WriteLine("Choose a Language (Insert ID):");
+                            Console.Out.WriteLine(tool.getLangList());
+                            String lang;
+                            do
+                            {
+                                Console.Out.Write("ID:");
+                                lang = Console.ReadLine();
+                            } while (!tool.CheckLang(lang));
+                            tool.Job("", lang);
                         }
                         else
                         {
-                            Console.Out.WriteLine("You are using the latest Version!");
-                            Exit();
+                            Console.Out.WriteLine("CCleaner is already installed!\nPlease run this tool as 'updater'!");
                         }
+                        tool.Exit(true);
                     }
                     else
                     {
-                        Exit();
+                        tool.Exit(true);
                     }
                 }
                 else
                 {
-                    Exit();
+                    //UPDATE CCLEANER
+                    tool.Job(args[0].Replace("path=", ""), args[1].Replace("lang=", ""));
+                    tool.Exit(false);
                 }
-
             }
-        }
-
-        private static void Exit()
-        {
-            Console.Out.WriteLine("Press Any Key to Exit...");
-            Console.ReadKey();
         }
     }
 }
