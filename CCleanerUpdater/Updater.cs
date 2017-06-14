@@ -11,7 +11,7 @@ namespace CCleanerUpdater
         private const String USAGE = "Usage:\n\n" +
             "  CCleanerUpdater.exe path=\"[CCleaner's Install Dir]\" lang=\"[Language]\" winapp2=\"[Option]\"\n\n" +
             "    # Common Install Dir: \"C:\\Program Files\\CCleaner\" - Use 'Common' if you want use this path\n"+
-            "    # WinApp2 Option:\n      # None - Don't install WinApp2\n      # Download - install the latest version\n\n" +
+            "    # WinApp2 Option:\n      # None - Don't install WinApp2\n      # Download - install the latest version\n      # DownloadTrim - Install Winapp2 and Run the Trimmer script\n\n" +
             "Example: CCleanerUpdater.exe path=\"Common\" lang=\"1040\" winapp2=\"Download\"";
         private readonly String[,] Languages =
         {
