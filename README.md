@@ -17,9 +17,9 @@ CCleanerUpdater.exe path="CCleaner Install Dir" lang="language code" winapp2="op
 
 ## :large_orange_diamond: TO-DO :scream:
 - [x] Basic Function
-- [ ] Clear Code
+- [x] Clear Code
 - [ ] GUI Helper
-- [ ] Language Option
+- [x] Language Option
 
 ## :large_orange_diamond: License :copyright:
 [This Project is under GNU GPLv3]
