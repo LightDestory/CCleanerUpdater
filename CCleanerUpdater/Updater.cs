@@ -9,9 +9,10 @@ namespace CCleanerUpdater
     {
         private const String title = "--- CCleaner Updater by LightDestory ---";
         private const String USAGE = "Usage:\n\n" +
-            "  CCleanerUpdater.exe path=\"[CCleaner's Install Dir]\" lang=\"[Language]\" winapp2=\"[Option]\"\n\n" +
-            "    # Common Install Dir: \"C:\\Program Files\\CCleaner\" - Use 'Common' if you want use this path\n"+
-            "    # WinApp2 Option:\n      # None - Don't install WinApp2\n      # Download - install the latest version\n      # DownloadTrim - Install Winapp2 and Run the Trimmer script\n\n" +
+            "CCleanerUpdater.exe path=\"[CCleaner's Install Dir]\" lang=\"[Language]\" winapp2=\"[Option]\" service=\"[option]\"\n\n" +
+            "    # Common Install Dir: \"C:/Program Files/CCleaner\" - Use 'Common' if you want use this path\n"+
+            "    # WinApp2 Option:\n      # None - Don't install WinApp2\n      # Download - install the latest version\n      # DownloadTrim - Install Winapp2 and Run the Trimmer script\n" +
+            "    # Service Option:\n      # None - Don't set-up the daily service\n      # Install - Set-up the daily service\n\n" +
             "Example: CCleanerUpdater.exe path=\"Common\" lang=\"1040\" winapp2=\"Download\"";
         private readonly String[,] Languages =
         {
@@ -26,11 +27,15 @@ namespace CCleanerUpdater
         private readonly String[] Links =
             {
                 "https://www.piriform.com/ccleaner/download","http://download.piriform.com/ccsetup", "https://raw.githubusercontent.com/LightDestory/CCleanerUpdater/master/version.txt",
-                "https://raw.githubusercontent.com/MoscaDotTo/Winapp2/master/Winapp2.ini","http://www.winapp2.com/trim.bat","https://forums.mydigitallife.net/threads/1-0-ccleaner-updater.74503/", "https://github.com/LightDestory/CCleanerUpdater", "http://lightdestoryweb.altervista.org/"
+                "https://raw.githubusercontent.com/MoscaDotTo/Winapp2/master/Winapp2.ini","http://www.winapp2.com/trim.bat","https://forums.mydigitallife.net/threads/1-0-ccleaner-updater.74503/"
             };
         private readonly String[] Winapp2Options =
         {
             "none", "download", "downloadtrim"
+        };
+        private readonly String[] ServiceOptions =
+        {
+            "none", "install"
         };
         private WebClient webby;
         private const String HTMLPrefix ="<p><strong>v";
@@ -46,20 +51,25 @@ namespace CCleanerUpdater
             webby = new WebClient();
         }
 
-        public void Job(String InstallDir, String Lang, String Winapp2)
+        public void Job(String InstallDir, String Lang, String Winapp2, String Service)
         {
             if (InstallDir.Equals("newinstall"))
             {
                 getLatestVersionOnline();
                 Download(Links[1] + OnlineVersion.Substring(0, 4).Replace(".", "") + ".exe", Environment.CurrentDirectory + "\\" + FileName, "CCleaner");
                 Install(Lang);
-                SetupWinapp2(CommonDirectory, Winapp2.ToLower());
+                SetupWinapp2(CommonDirectory, Winapp2);
+                SetUpService(CommonDirectory, Lang, Winapp2, Service);
             }
             else
             {
-                if (InstallDir.ToLower().Equals("common"))
+                if (InstallDir.Equals("common"))
                 {
                     InstallDir = CommonDirectory;
+                }
+                else if (InstallDir.ToCharArray()[InstallDir.Length - 1] != '/')
+                {
+                    InstallDir = InstallDir + "\\";
                 }
                 getCurrentVersionFromExe(InstallDir);
                 getLatestVersionOnline();
@@ -72,7 +82,8 @@ namespace CCleanerUpdater
                 {
                     Console.WriteLine("You are using the latest version!");
                 }
-                SetupWinapp2(InstallDir, Winapp2.ToLower());
+                SetupWinapp2(InstallDir, Winapp2);
+                SetUpService(InstallDir, Lang, Winapp2, Service);
             }
             WriteLineColored(ConsoleColor.Green, ConsoleColor.Blue, "Done!");
         }
@@ -130,7 +141,7 @@ namespace CCleanerUpdater
                 {
                     if (!CheckExist(path, "Winapp2.ini"))
                     {
-                        Download(Links[3], path + "\\Winapp2.ini", "Winapp2");
+                        Download(Links[3], path + "Winapp2.ini", "Winapp2");
                         if (Winapp2.Contains("trim"))
                         {
                             TrimWinapp2(path);
@@ -142,7 +153,7 @@ namespace CCleanerUpdater
                         CurrentVersion = new StringReader(File.ReadAllText(path + "Winapp2.ini")).ReadLine().Replace("; Version: ", "");
                         if (Compare())
                         {
-                            Download(Links[3], path + "\\Winapp2.ini", "Winapp2");
+                            Download(Links[3], path + "Winapp2.ini", "Winapp2");
                             if (Winapp2.Contains("trim"))
                             {
                                 TrimWinapp2(path);
@@ -169,10 +180,10 @@ namespace CCleanerUpdater
             {
                 if (!CheckExist(path, "Trimmer.bat"))
                 {
-                    Download(Links[4], path + "\\Trimmer.bat", "Trimmer Script");
+                    Download(Links[4], path + "Trimmer.bat", "Trimmer Script");
                 }
                 Console.Out.Write("Running Trimmer Script, follow the instructions!");
-                var TrimmerScript = Process.Start(path + "\\Trimmer.bat");
+                var TrimmerScript = Process.Start(path + "Trimmer.bat");
                 TrimmerScript.WaitForExit();
                 WriteLineColored(ConsoleColor.Green, ConsoleColor.Blue, "Trimmed Successfull");
             }
@@ -181,6 +192,23 @@ namespace CCleanerUpdater
                 WriteLineColored(ConsoleColor.Red, ConsoleColor.Black, "Unable to Download the Trimmer Script");
                 Console.Error.WriteLine(wex);
                 Exit();
+            }
+        }
+
+        public void SetUpService(String path, string lang, string winapp2, string action)
+        {
+            if (action.Equals("install"))
+            {
+                if (System.Environment.OSVersion.Version.Major == 5)
+                {
+                    WriteLineColored(ConsoleColor.Red, ConsoleColor.Black, "Windows XP isn't supported for daily Service Setup!");
+                }
+                else
+                {
+                    Console.Out.Write("Setting up Daily Sercive...");
+                    Process.Start("schtasks.exe", "/create /tn \"CCleanerUpdater\" /tr \"\\\"" + Environment.CurrentDirectory + "\\" + System.AppDomain.CurrentDomain.FriendlyName + "\\\" path=\\\"" + path + "\"" + " lang=\\\"" + lang + "\\\"" + " winapp2=\\\"" + winapp2 + "\\\"" + " service=\\\"None\\\"" + "\" /sc ONSTART /RL HIGHEST");
+                    WriteLineColored(ConsoleColor.Green, ConsoleColor.Blue, "Done! Remember: Don't move the tool from the actual folder!");
+                }
             }
         }
 
@@ -233,6 +261,16 @@ namespace CCleanerUpdater
                         }
                     }
                     break;
+                case "Service":
+                    for (int i = 0; i < ServiceOptions.Length; i++)
+                    {
+                        if (data.Equals(ServiceOptions[i]))
+                        {
+                            valid = true;
+                            break;
+                        }
+                    }
+                    break;
                 default:
                     break;
             }
@@ -272,7 +310,7 @@ namespace CCleanerUpdater
         {
             try
             {
-                CurrentVersion = FileVersionInfo.GetVersionInfo(path + "\\CCleaner.exe").FileVersion.Replace("00", "").Replace(" ", "").Replace(",", ".").Replace("..", ".");
+                CurrentVersion = FileVersionInfo.GetVersionInfo(path + "CCleaner.exe").FileVersion.Replace("00", "").Replace(" ", "").Replace(",", ".").Replace("..", ".");
             }
             catch (Exception ex)
             {

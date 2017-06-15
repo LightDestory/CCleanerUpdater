@@ -12,16 +12,17 @@ namespace CCleanerUpdater
             //Checking Update
             Tool.CheckForUpdate();
             //Checking Status
-            if (args.Length != 0 && (args[0].Equals("/help") || args[0].Equals("/h")))
+            if (args.Length == 1 && (args[0].Equals("/help") || args[0].Equals("/h")))
             {
                 //Requesting Help
                 Console.Out.WriteLine(Tool.getUsage());
-                Console.Out.WriteLine("\nLanguages:\n\n" +Tool.getLangList());
+                Console.Out.WriteLine("\nLanguages:\n\n" + Tool.getLangList());
             }
-            else if ((args.Length !=0 && args.Length!=3) || (args.Length == 3 && (!args[0].Contains("path=") || !args[1].Contains("lang=") || !args[2].Contains("winapp2="))))
+            else if ((args.Length != 0 && args.Length!= 4) || (args.Length == 4 && (!args[0].Contains("path=") || !args[1].Contains("lang=") || !args[2].Contains("winapp2=") || !args[3].Contains("service="))))
             {
                 //Arguments Missing
                 Tool.WriteLineColored(ConsoleColor.Red, ConsoleColor.Black, "Wrong arguments!, try CCleanerUpdater.exe /help");
+                Tool.Exit();
             }
             else
             {
@@ -29,58 +30,65 @@ namespace CCleanerUpdater
                 {
                     //INSTALL CCLEANER
                     Console.Out.WriteLine("Opening this tool without arguments will start a installation wizard:\nIf you want to install CCleaner say 'y'\n" +
-                        "If you want to update CCleaner, check argument '/help' ('n' to close):");
+                        "If you want to update CCleaner and set-up the daily sercive, check argument '/help' ('n' to close):");
                     RequestInput();
-                    if (action.Equals("y"))
+                    if (action.Equals("y") && !Tool.CheckExist(Tool.getCommonDir(), "CCleaner.exe"))
                     {
-                        if (!Tool.CheckExist(Tool.getCommonDir(), "CCleaner.exe"))
+                        String lang, winapp2;
+                        Console.Out.WriteLine("Choose a Language (Insert ID):");
+                        Console.Out.WriteLine(Tool.getLangList());
+                        do
                         {
-                            Console.Out.WriteLine("Choose a Language (Insert ID):");
-                            Console.Out.WriteLine(Tool.getLangList());
-                            String lang;
-                            do
-                            {
-                                Console.Out.Write("ID:");
-                                lang = Console.ReadLine();
-                            } while (!Tool.CheckArg("Language", lang));
-                            Console.Out.WriteLine("Do you want to install Winapp2? (y/n)");
+                            Console.Out.Write("ID:");
+                            lang = Console.ReadLine();
+                        } while (!Tool.CheckArg("Language", lang));
+                        Console.Out.WriteLine("Do you want to install Winapp2? (y/n)");
+                        RequestInput();
+                        if (action.Equals("y"))
+                        {
+                            Console.Out.WriteLine("Do you want to Trim Winapp2? (y/n)");
                             RequestInput();
                             if (action.Equals("y"))
                             {
-                                Console.Out.WriteLine("Do you want to Trim Winapp2? (y/n)");
-                                RequestInput();
-                                if (action.Equals("y"))
-                                {
-                                    action = "DownloadTrim";
-                                }
-                                else
-                                {
-                                    action = "Download";
-                                }
+                                winapp2 = "downloadtrim";
                             }
                             else
                             {
-                                action = "None";
+                                winapp2 = "download";
                             }
-                            Tool.Job("newinstall", lang, action);
                         }
                         else
                         {
-                            Tool.WriteLineColored(ConsoleColor.Green, ConsoleColor.Blue, "CCleaner is already installed!\n Please run this tool as 'updater'!");
+                            winapp2 = "none";
                         }
-                        Tool.Exit();
+                        Console.Out.WriteLine("Do you want to set-up daily service? (y/n)");
+                        RequestInput();
+                        if (action.Equals("y"))
+                        {
+                            action = "install";
+                        }
+                        else
+                        {
+                            action = "none";
+                        }
+                        Tool.Job("newinstall", lang, winapp2, action);
                     }
                     else
                     {
+                        if(Tool.CheckExist(Tool.getCommonDir(), "CCleaner.exe"))
+                        {
+                            Tool.WriteLineColored(ConsoleColor.Green, ConsoleColor.Blue, "CCleaner is already installed. Please run this tool as 'updater'!");
+                        }
                         Tool.Exit();
                     }
                 }
                 else
                 {
                     //UPDATE CCLEANER
-                    if (Tool.CheckArg("Language", args[1].Replace("lang=", "")) && Tool.CheckArg("Winapp2", args[2].Replace("winapp2=", "").ToLower()))
+                    if (Tool.CheckArg("Language", args[1].Replace("lang=", "")) && Tool.CheckArg("Winapp2", args[2].Replace("winapp2=", "").ToLower()) && Tool.CheckArg("Service", args[3].Replace("service=","").ToLower()))
                     {
-                        Tool.Job(args[0].Replace("path=", ""), args[1].Replace("lang=", ""), args[2].Replace("winapp2=", ""));
+                        Tool.Job(args[0].Replace("path=", ""), args[1].Replace("lang=", ""), args[2].Replace("winapp2=", "").ToLower(), args[3].Replace("service=", "").ToLower());
+                        Environment.Exit(0);
                     }
                     else
                     {
