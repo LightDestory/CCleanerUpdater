@@ -56,7 +56,7 @@ namespace CCleanerUpdater
             if (InstallDir.Equals("newinstall"))
             {
                 getLatestVersionOnline();
-                Download(Links[1] + OnlineVersion.Substring(0, 4).Replace(".", "") + ".exe", Environment.CurrentDirectory + "\\" + FileName, "CCleaner");
+                Download(Links[1] + OnlineVersion.Substring(0, 4).Replace(".", "") + ".exe", System.IO.Path.GetTempPath() + "\\" + FileName, "CCleaner");
                 Install(Lang);
                 SetupWinapp2(CommonDirectory, Winapp2);
                 SetUpService(CommonDirectory, Lang, Winapp2, Service);
@@ -75,7 +75,7 @@ namespace CCleanerUpdater
                 getLatestVersionOnline();
                 if (Compare())
                 {
-                    Download(Links[1] + OnlineVersion.Substring(0, 4).Replace(".", "") + ".exe", Environment.CurrentDirectory + "\\" + FileName, "CCleaner");
+                    Download(Links[1] + OnlineVersion.Substring(0, 4).Replace(".", "") + ".exe", System.IO.Path.GetTempPath() + "\\" + FileName, "CCleaner");
                     Install(Lang);
                 }
                 else
@@ -120,9 +120,9 @@ namespace CCleanerUpdater
             Console.Out.Write("Installing CCleaner... ");
             try
             {
-                var Installation = Process.Start(Environment.CurrentDirectory+ "\\" + FileName, "/S /L=" + Lang);
+                var Installation = Process.Start(System.IO.Path.GetTempPath() + "\\" + FileName, "/S /L=" + Lang);
                 Installation.WaitForExit();
-                File.Delete(Environment.CurrentDirectory + "\\" + FileName);
+                File.Delete(System.IO.Path.GetTempPath() + "\\" + FileName);
                 WriteLineColored(ConsoleColor.Green, ConsoleColor.Blue, "Install completed!");
             }
             catch (Exception ex)
