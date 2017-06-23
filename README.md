@@ -10,7 +10,7 @@ https://youtu.be/B93d4SR7VcU
 ## :large_orange_diamond: Usage
 CCleanerUpdater.exe /h, to get all info
 
-CCleanerUpdater.exe path="CCleaner Install Dir" lang="language code" winapp2="option"
+CCleanerUpdater.exe path="CCleaner Install Dir" lang="language code" winapp2="option" service="install"
 
 ## :large_orange_diamond: Features
 - Auto-download requires files (CCleaner setup from Official Server)

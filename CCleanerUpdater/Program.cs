@@ -3,7 +3,7 @@ namespace CCleanerUpdater
 {
     class Program
     {
-        private static String action;
+        private static String lang, winapp2, action;
         static void Main(string[] args)
         {
             Updater Tool = new Updater();
@@ -34,7 +34,6 @@ namespace CCleanerUpdater
                     RequestInput();
                     if (action.Equals("y") && !Tool.CheckExist(Tool.getCommonDir(), "CCleaner.exe"))
                     {
-                        String lang, winapp2;
                         Console.Out.WriteLine("Choose a Language (Insert ID):");
                         Console.Out.WriteLine(Tool.getLangList());
                         do
@@ -61,7 +60,7 @@ namespace CCleanerUpdater
                         {
                             winapp2 = "none";
                         }
-                        Console.Out.WriteLine("Do you want to set-up daily service? (y/n)");
+                        Console.Out.WriteLine("Do you want to set-up on startup service? (y/n)");
                         RequestInput();
                         if (action.Equals("y"))
                         {

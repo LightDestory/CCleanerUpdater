@@ -12,8 +12,8 @@ namespace CCleanerUpdater
             "CCleanerUpdater.exe path=\"[CCleaner's Install Dir]\" lang=\"[Language]\" winapp2=\"[Option]\" service=\"[option]\"\n\n" +
             "    # Common Install Dir: \"C:/Program Files/CCleaner\" - Use 'Common' if you want use this path\n"+
             "    # WinApp2 Option:\n      # None - Don't install WinApp2\n      # Download - install the latest version\n      # DownloadTrim - Install Winapp2 and Run the Trimmer script\n" +
-            "    # Service Option:\n      # None - Don't set-up the daily service\n      # Install - Set-up the daily service\n\n" +
-            "Example: CCleanerUpdater.exe path=\"Common\" lang=\"1040\" winapp2=\"Download\"";
+            "    # Service Option:\n      # None - Don't set-up the on startup service\n      # Install - Set-up the on startup service\n\n" +
+            "Example: CCleanerUpdater.exe path=\"Common\" lang=\"1040\" winapp2=\"Download\" service=\"install\"";
         private readonly String[,] Languages =
         {
             {"Albanian","1052"},{"Arabic","1025"},{"Armenian","1067"},{"Azeri Latin","1068"},{"Belarusian","1059"},{"Bosnian","5146"},{"Portuguese(Brazil)","1046"},
@@ -27,7 +27,7 @@ namespace CCleanerUpdater
         private readonly String[] Links =
             {
                 "https://www.piriform.com/ccleaner/download","http://download.piriform.com/ccsetup", "https://raw.githubusercontent.com/LightDestory/CCleanerUpdater/master/version.txt",
-                "https://raw.githubusercontent.com/MoscaDotTo/Winapp2/master/Winapp2.ini","http://www.winapp2.com/trim.bat","https://forums.mydigitallife.net/threads/1-0-ccleaner-updater.74503/"
+                "https://raw.githubusercontent.com/MoscaDotTo/Winapp2/master/Winapp2.ini","http://www.winapp2.com/trim.bat","http://lightdestoryweb.altervista.org/"
             };
         private readonly String[] Winapp2Options =
         {
@@ -205,9 +205,14 @@ namespace CCleanerUpdater
                 }
                 else
                 {
-                    Console.Out.Write("Setting up Daily Sercive...");
-                    Process.Start("schtasks.exe", "/create /tn \"CCleanerUpdater\" /tr \"\\\"" + Environment.CurrentDirectory + "\\" + System.AppDomain.CurrentDomain.FriendlyName + "\\\" path=\\\"" + path + "\"" + " lang=\\\"" + lang + "\\\"" + " winapp2=\\\"" + winapp2 + "\\\"" + " service=\\\"None\\\"" + "\" /sc ONSTART /RL HIGHEST");
+                    Console.Out.Write("Setting up Daily Service...");
+                    String Path2 = Environment.CurrentDirectory + "\\" + System.AppDomain.CurrentDomain.FriendlyName;
+                    String Arg = "path=\"" + path + "\\\"" + " lang=\"" + lang + "\"" + " winapp2=\"" + winapp2 + "\"" + " service=\"None\"";
+                    File.WriteAllText("Service.xml", CCleanerUpdater.Properties.Resources.CCleanerUpdaterService.ToString().Replace("%PATH_TO_TOOL%", Path2).Replace("%ARG_TO_USE%", Arg));
+                    var x = Process.Start("schtasks.exe", "/create /tn \"CCleanerUpdater\" /XML \"" + Environment.CurrentDirectory + "\\" + "Service.xml\"");
                     WriteLineColored(ConsoleColor.Green, ConsoleColor.Blue, "Done! Remember: Don't move the tool from the actual folder!");
+                    x.WaitForExit();
+                    File.Delete("Service.xml");
                 }
             }
         }
@@ -220,13 +225,13 @@ namespace CCleanerUpdater
                 OnlineVersion = webby.DownloadString(Links[2]);
                 if (!OnlineVersion.Equals(CurrentVersion))
                 {
-                    WriteLineColored(ConsoleColor.Green, ConsoleColor.Blue, "New Update avaible! Opening forum's thread");
+                    WriteLineColored(ConsoleColor.Green, ConsoleColor.Blue, "New Update available! Opening my website...");
                     Process.Start(Links[5]);
                     Exit();
                 }
                 else
                 {
-                    WriteLineColored(ConsoleColor.Green, ConsoleColor.Blue, "No Update avaible");
+                    WriteLineColored(ConsoleColor.Green, ConsoleColor.Blue, "No Update available");
                 }
             }
             catch (WebException wex)
@@ -277,15 +282,9 @@ namespace CCleanerUpdater
             return valid;
         }
 
-        public String getUsage()
-        {
-            return USAGE;
-        }
+        public String getUsage() => USAGE;
 
-        public String getTitle()
-        {
-            return title;
-        }
+        public String getTitle() => title;
 
         public String getLangList()
         {
@@ -300,11 +299,8 @@ namespace CCleanerUpdater
             }
             return List;
         }
-        
-        public String getCommonDir()
-        {
-            return CommonDirectory;
-        }
+
+        public String getCommonDir() => CommonDirectory;
 
         private void getCurrentVersionFromExe(string path)
         {
