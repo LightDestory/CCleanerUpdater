@@ -19,7 +19,7 @@ namespace CCleanerUpdater.Properties {
     // tramite uno strumento quale ResGen o Visual Studio.
     // Per aggiungere o rimuovere un membro, modificare il file con estensione ResX ed eseguire nuovamente ResGen
     // con l'opzione /str oppure ricompilare il progetto VS.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -62,15 +62,15 @@ namespace CCleanerUpdater.Properties {
         
         /// <summary>
         ///   Cerca una stringa localizzata simile a &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-16&quot;?&gt;
-        ///&lt;Task version=&quot;1.2&quot; xmlns=&quot;http://schemas.microsoft.com/windows/2004/02/mit/task&quot;&gt;
+        ///&lt;Task version=&quot;1.4&quot; xmlns=&quot;http://schemas.microsoft.com/windows/2004/02/mit/task&quot;&gt;
         ///  &lt;RegistrationInfo&gt;
         ///    &lt;URI&gt;\CCleanerUpdater&lt;/URI&gt;
         ///  &lt;/RegistrationInfo&gt;
         ///  &lt;Triggers&gt;
-        ///    &lt;BootTrigger&gt;
+        ///    &lt;LogonTrigger&gt;
         ///      &lt;Enabled&gt;true&lt;/Enabled&gt;
-        ///      &lt;Delay&gt;PT10M&lt;/Delay&gt;
-        ///    &lt;/BootTrigger&gt;
+        ///      &lt;Delay&gt;PT5M&lt;/Delay&gt;
+        ///    &lt;/LogonTrigger&gt;
         ///  &lt;/Triggers&gt;
         ///  &lt;Principals&gt;
         ///    &lt;Principal id=&quot;Author&quot;&gt;
@@ -78,7 +78,7 @@ namespace CCleanerUpdater.Properties {
         ///      &lt;RunLevel&gt;HighestAvailable&lt;/RunLevel&gt;
         ///    &lt;/Principal&gt;
         ///  &lt;/Principals&gt;
-        ///  &lt;Setting [stringa troncata]&quot;;.
+        ///  &lt;Settin [stringa troncata]&quot;;.
         /// </summary>
         internal static string CCleanerUpdaterService {
             get {

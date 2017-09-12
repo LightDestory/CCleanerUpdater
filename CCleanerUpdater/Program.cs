@@ -8,6 +8,7 @@ namespace CCleanerUpdater
         {
             Updater Tool = new Updater();
             //Title
+            Console.Title = "CCleanerUpdater by LightDestory";
             Tool.WriteLineColored(ConsoleColor.Blue, ConsoleColor.Red, Tool.getTitle());
             //Checking Update
             Tool.CheckForUpdate();

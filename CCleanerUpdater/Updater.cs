@@ -47,6 +47,8 @@ namespace CCleanerUpdater
 
         public Updater()
         {
+            ServicePointManager.Expect100Continue = true;
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls;
             CurrentVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
             webby = new WebClient();
         }
