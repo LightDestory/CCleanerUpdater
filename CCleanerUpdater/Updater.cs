@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
@@ -14,34 +15,17 @@ namespace CCleanerUpdater
             "    # WinApp2 Option:\n      # None - Don't install WinApp2\n      # Download - install the latest version\n      # DownloadTrim - Install Winapp2 and Run the Trimmer script\n" +
             "    # Service Option:\n      # None - Don't set-up the on startup service\n      # Install - Set-up the on startup service\n\n" +
             "Example: CCleanerUpdater.exe path=\"Common\" lang=\"1040\" winapp2=\"Download\" service=\"install\"";
-        private readonly String[,] Languages =
-        {
-            {"Albanian","1052"},{"Arabic","1025"},{"Armenian","1067"},{"Azeri Latin","1068"},{"Belarusian","1059"},{"Bosnian","5146"},{"Portuguese(Brazil)","1046"},
-            {"Bulgarian","1026"},{"Catalan","1027"},{"Chinese-Simplified","2052"},{"Chinese-Traditional","1028"},{"Croatian"," 1050"},{"Czech","1029"},
-            {"Danish","1030"},{"Dutch","1043"},{"English","1033"},{"Estonian","1061"},{"Farsi","1065"},{"Finnish","1035"},{"French","1036"},{"Galician","1110"},
-            {"Georgian","1079"},{"German","1031"},{"Greek","1032"},{"Hebrew","1037"},{"Hungarian","1038"},{"Italian","1040"},{"Japanese","1041"},{"Kazakh","1087"},
-            {"Korean","1042"},{"Lithuanian","1063"},{"Macedonian","1071"},{"Norwegian","1044"},{"Polish","1045"},{"Portuguese","2070"},{"Romanian","1048"},
-            {"Russian","1049"},{"Serbian-Cyrillic","3098"},{"Serbian-Latin","2074"},{"Slovak","1051"},{"Slovenian","1060"},{"Spanish","1034"},
-            {"Swedish","1053"},{"Turkish","1055"},{"Ukrainian","1058"},{"Vietnamese","1066"}
-        };
-        private readonly String[] Links =
+        
+        private readonly Dictionary<string,string> Links = new Dictionary<string,string>()
             {
-                "https://www.piriform.com/ccleaner/download","http://download.piriform.com/ccsetup", "https://raw.githubusercontent.com/LightDestory/CCleanerUpdater/master/version.txt",
-                "https://raw.githubusercontent.com/MoscaDotTo/Winapp2/master/Winapp2.ini","http://www.winapp2.com/trim.bat","http://lightdestoryweb.altervista.org/"
+                {"Version", "https://raw.githubusercontent.com/LightDestory/CCleanerUpdater/master/version.txt" },
+                {"Website", "http://lightdestoryweb.altervista.org/" }
             };
-        private readonly String[] Winapp2Options =
-        {
-            "none", "download", "downloadtrim"
-        };
         private readonly String[] ServiceOptions =
         {
             "none", "install"
         };
         private WebClient webby;
-        private const String HTMLPrefix ="<p><strong>v";
-        private const String HTMLSuffix = "</strong> (";
-        private const String FileName = "CCleanerUpdate.exe";
-        private String CommonDirectory = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles) + "\\CCleaner\\";
         private String OnlineVersion;
         private String CurrentVersion;
 
@@ -53,45 +37,42 @@ namespace CCleanerUpdater
 
         public void Job(String InstallDir, String Lang, String Winapp2, String Service)
         {
+            getLatestVersionOnline();
             if (InstallDir.Equals("newinstall"))
             {
-                getLatestVersionOnline();
-                Download(Links[1] + OnlineVersion.Substring(0, 4).Replace(".", "") + ".exe", System.IO.Path.GetTempPath() + "\\" + FileName, "CCleaner");
+                Download(CCleaner.Links["Download"] + OnlineVersion.Substring(0, 4).Replace(".", "") + ".exe", Path.GetTempPath() + "\\" + CCleaner.FileName, "CCleaner");
                 Install(Lang);
-                SetupWinapp2(CommonDirectory, Winapp2);
-                SetUpService(CommonDirectory, Lang, Winapp2, Service);
             }
             else
             {
                 if (InstallDir.Equals("common"))
                 {
-                    InstallDir = CommonDirectory;
+                    InstallDir = CCleaner.CommonDirectory;
                 }
                 else if (InstallDir.ToCharArray()[InstallDir.Length - 1] != '/')
                 {
                     InstallDir = InstallDir + "\\";
                 }
                 getCurrentVersionFromExe(InstallDir);
-                getLatestVersionOnline();
-                if (Compare())
+                if (isUpdateAvailable(CurrentVersion, OnlineVersion))
                 {
-                    Download(Links[1] + OnlineVersion.Substring(0, 4).Replace(".", "") + ".exe", System.IO.Path.GetTempPath() + "\\" + FileName, "CCleaner");
+                    Download(CCleaner.Links["Download"] + OnlineVersion.Substring(0, 4).Replace(".", "") + ".exe", Path.GetTempPath() + "\\" + CCleaner.FileName, "CCleaner");
                     Install(Lang);
                 }
                 else
                 {
                     Console.WriteLine("You are using the latest version!");
                 }
-                SetupWinapp2(InstallDir, Winapp2);
-                SetUpService(InstallDir, Lang, Winapp2, Service);
             }
+            SetupWinapp2(CCleaner.CommonDirectory, Winapp2);
+            SetUpService(CCleaner.CommonDirectory, Lang, Winapp2, Service);
             WriteLineColored(ConsoleColor.Green, ConsoleColor.Blue, "Done!");
         }
 
-        private Boolean Compare()
+        private Boolean isUpdateAvailable(String local, String online)
         {
-            Console.WriteLine("Installed Version: {0}\nOnline Version: {1}", CurrentVersion, OnlineVersion);
-            return (!CurrentVersion.Equals(OnlineVersion));
+            Console.WriteLine("Installed Version: {0}\nOnline Version: {1}", local, online);
+            return (!local.Equals(online));
         }
 
         private void Download(String link, String saveto, String name)
@@ -106,7 +87,7 @@ namespace CCleanerUpdater
             {
                 WriteLineColored(ConsoleColor.Red, ConsoleColor.Black, "Error on downloading!");
                 Console.Error.WriteLine(ex);
-                Exit();
+                Exit(10);
             }
         }
 
@@ -120,41 +101,41 @@ namespace CCleanerUpdater
             Console.Out.Write("Installing CCleaner... ");
             try
             {
-                var Installation = Process.Start(System.IO.Path.GetTempPath() + "\\" + FileName, "/S /L=" + Lang);
+                var Installation = Process.Start(Path.GetTempPath() + "\\" + CCleaner.FileName, "/S /L=" + Lang);
                 Installation.WaitForExit();
-                File.Delete(System.IO.Path.GetTempPath() + "\\" + FileName);
+                File.Delete(Path.GetTempPath() + "\\" + CCleaner.FileName);
                 WriteLineColored(ConsoleColor.Green, ConsoleColor.Blue, "Install completed!");
             }
             catch (Exception ex)
             {
                 WriteLineColored(ConsoleColor.Red, ConsoleColor.Black, "Error on installing...");
                 Console.Error.WriteLine(ex.ToString());
-                Exit();
+                Exit(10);
             }
         }
 
-        private void SetupWinapp2(String path, String Winapp2)
+        private void SetupWinapp2(String path, String Option)
         {
             try
             {
-                if (Winapp2.Contains("download"))
+                if (Option.Contains("download"))
                 {
                     if (!CheckExist(path, "Winapp2.ini"))
                     {
-                        Download(Links[3], path + "Winapp2.ini", "Winapp2");
-                        if (Winapp2.Contains("trim"))
+                        Download(Winapp2.Links["File"], path + "Winapp2.ini", "Winapp2");
+                        if (Option.Contains("trim"))
                         {
                             TrimWinapp2(path);
                         }
                     }
                     else
                     {
-                        OnlineVersion = new StringReader(webby.DownloadString(Links[3])).ReadLine().Replace("; Version: ", "");
+                        OnlineVersion = new StringReader(webby.DownloadString(Winapp2.Links["File"])).ReadLine().Replace("; Version: ", "");
                         CurrentVersion = new StringReader(File.ReadAllText(path + "Winapp2.ini")).ReadLine().Replace("; Version: ", "");
-                        if (Compare())
+                        if (isUpdateAvailable(CurrentVersion, OnlineVersion))
                         {
-                            Download(Links[3], path + "Winapp2.ini", "Winapp2");
-                            if (Winapp2.Contains("trim"))
+                            Download(Winapp2.Links["File"], path + "Winapp2.ini", "Winapp2");
+                            if (Option.Contains("trim"))
                             {
                                 TrimWinapp2(path);
                             }
@@ -170,7 +151,7 @@ namespace CCleanerUpdater
             {
                 WriteLineColored(ConsoleColor.Red, ConsoleColor.Black, "Error on Setup of Winapp2");
                 Console.WriteLine(ex);
-                Exit();
+                Exit(10);
             }
         }
 
@@ -180,7 +161,7 @@ namespace CCleanerUpdater
             {
                 if (!CheckExist(path, "Trimmer.bat"))
                 {
-                    Download(Links[4], path + "Trimmer.bat", "Trimmer Script");
+                    Download(Winapp2.Links["Trimmer"], path + "Trimmer.bat", "Trimmer Script");
                 }
                 Console.Out.Write("Running Trimmer Script, follow the instructions!");
                 var TrimmerScript = Process.Start(path + "Trimmer.bat");
@@ -191,7 +172,7 @@ namespace CCleanerUpdater
             {
                 WriteLineColored(ConsoleColor.Red, ConsoleColor.Black, "Unable to Download the Trimmer Script");
                 Console.Error.WriteLine(wex);
-                Exit();
+                Exit(10);
             }
         }
 
@@ -199,16 +180,16 @@ namespace CCleanerUpdater
         {
             if (action.Equals("install"))
             {
-                if (System.Environment.OSVersion.Version.Major == 5)
+                if (Environment.OSVersion.Version.Major == 5)
                 {
                     WriteLineColored(ConsoleColor.Red, ConsoleColor.Black, "Windows XP isn't supported for daily Service Setup!");
                 }
                 else
                 {
                     Console.Out.Write("Setting up Daily Service...");
-                    String Path2 = Environment.CurrentDirectory + "\\" + System.AppDomain.CurrentDomain.FriendlyName;
+                    String Path2 = Environment.CurrentDirectory + "\\" + AppDomain.CurrentDomain.FriendlyName;
                     String Arg = "path=\"" + path + "\\\"" + " lang=\"" + lang + "\"" + " winapp2=\"" + winapp2 + "\"" + " service=\"None\"";
-                    File.WriteAllText("Service.xml", CCleanerUpdater.Properties.Resources.CCleanerUpdaterService.ToString().Replace("%PATH_TO_TOOL%", Path2).Replace("%ARG_TO_USE%", Arg));
+                    File.WriteAllText("Service.xml", Properties.Resources.CCleanerUpdaterService.ToString().Replace("%PATH_TO_TOOL%", Path2).Replace("%ARG_TO_USE%", Arg));
                     var x = Process.Start("schtasks.exe", "/create /tn \"CCleanerUpdater\" /XML \"" + Environment.CurrentDirectory + "\\" + "Service.xml\"");
                     WriteLineColored(ConsoleColor.Green, ConsoleColor.Blue, "Done! Remember: Don't move the tool from the actual folder!");
                     x.WaitForExit();
@@ -222,12 +203,12 @@ namespace CCleanerUpdater
             Console.Out.Write("Checking for Tool's Update... ");
             try
             {
-                OnlineVersion = webby.DownloadString(Links[2]);
+                OnlineVersion = webby.DownloadString(Links["Version"]);
                 if (!OnlineVersion.Equals(CurrentVersion))
                 {
                     WriteLineColored(ConsoleColor.Green, ConsoleColor.Blue, "New Update available! Opening my website...");
-                    Process.Start(Links[5]);
-                    Exit();
+                    Process.Start(Links["Website"]);
+                    Exit(0);
                 }
                 else
                 {
@@ -238,6 +219,7 @@ namespace CCleanerUpdater
             {
                 WriteLineColored(ConsoleColor.Red, ConsoleColor.Black, "Error on checking for update!");
                 Console.Error.WriteLine(wex.ToString());
+                Exit(10);
             }
         }
 
@@ -247,9 +229,9 @@ namespace CCleanerUpdater
             switch (type)
             {
                 case "Language":
-                    for (int i = 0; i < Languages.GetLength(0); i++)
+                    foreach(KeyValuePair<string, string> d in CCleaner.Languages)
                     {
-                        if (data.Equals(Languages[i, 1]))
+                        if(data.Equals(d.Value))
                         {
                             valid = true;
                             break;
@@ -257,9 +239,9 @@ namespace CCleanerUpdater
                     }
                     break;
                 case "Winapp2":
-                    for (int i = 0; i < Winapp2Options.Length; i++)
+                    for (int i = 0; i < Winapp2.Winapp2Options.Length; i++)
                     {
-                        if (data.Equals(Winapp2Options[i]))
+                        if (data.Equals(Winapp2.Winapp2Options[i]))
                         {
                             valid = true;
                             break;
@@ -288,25 +270,19 @@ namespace CCleanerUpdater
 
         public String getLangList()
         {
-            String List = Languages[0, 0] + ":" + Languages[0, 1] + "\t\t";
-            for (int i = 1; i < Languages.GetLength(0); i++)
+            String List = "";
+            foreach(KeyValuePair<string,string> d in CCleaner.Languages)
             {
-                if (i % 2 == 0)
-                {
-                    List = List + "\n";
-                }
-                List = List + Languages[i, 0] + ":" + Languages[i, 1] + "\t\t";
+                List += d.Key + ":" + d.Value + "\n";
             }
             return List;
         }
-
-        public String getCommonDir() => CommonDirectory;
 
         private void getCurrentVersionFromExe(string path)
         {
             try
             {
-                CurrentVersion = FileVersionInfo.GetVersionInfo(path + "CCleaner.exe").FileVersion.Replace("00", "").Replace(" ", "").Replace(",", ".").Replace("..", ".");
+                CurrentVersion = FileVersionInfo.GetVersionInfo(path + "CCleaner.exe").FileVersion.Replace(",",".").Replace("00.","").Replace(" ", "");
             }
             catch (Exception ex)
             {
@@ -319,7 +295,7 @@ namespace CCleanerUpdater
                     WriteLineColored(ConsoleColor.Red, ConsoleColor.Black, "Error retriving local version!");
                 }
                 Console.Error.WriteLine(ex.ToString());
-                Exit();
+                Exit(10);
             }
         }
 
@@ -327,17 +303,17 @@ namespace CCleanerUpdater
         {
             try
             {
-                System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-                string html = webby.DownloadString(Links[0]);
-                int start = html.IndexOf(HTMLPrefix) + HTMLPrefix.Length;
-                int end = html.IndexOf(HTMLSuffix) - start;
+                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+                string html = webby.DownloadString(CCleaner.Links["Version"]);
+                int start = html.IndexOf(CCleaner.HTMLPrefix) + CCleaner.HTMLPrefix.Length;
+                int end = html.IndexOf(CCleaner.HTMLSuffix) - start;
                 OnlineVersion = html.Substring(start, end);
             }
             catch (Exception ex)
             {
                 WriteLineColored(ConsoleColor.Red, ConsoleColor.Black, "Error retriving the latest version online!");
                 Console.Error.WriteLine(ex.ToString());
-                Exit();
+                Exit(10);
             }
         }
 
@@ -349,11 +325,11 @@ namespace CCleanerUpdater
             Console.ResetColor();
         }
 
-        public void Exit()
+        public void Exit(int mode)
         {
             Console.Out.WriteLine("Press Any Key to Exit...");
             Console.ReadKey();
-            Environment.Exit(0);
+            Environment.Exit(mode);
         }
     }
 }

@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 // set di attributi. Modificare i valori di questi attributi per modificare le informazioni
 // associate a un assembly.
 [assembly: AssemblyTitle("CCleaner Updater")]
-[assembly: AssemblyDescription("A simple to keep up to date CCleaner")]
+[assembly: AssemblyDescription("A simple tool to keep up to date CCleaner")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("LightDestory's App")]
 [assembly: AssemblyProduct("CCleaner Updater")]
@@ -32,5 +32,5 @@ using System.Runtime.InteropServices;
 // È possibile specificare tutti i valori oppure impostare valori predefiniti per i numeri relativi alla revisione e alla build
 // usando l'asterisco '*' come illustrato di seguito:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.2.5.0")]
-[assembly: AssemblyFileVersion("1.2.5.0")]
+[assembly: AssemblyVersion("1.2.6.0")]
+[assembly: AssemblyFileVersion("1.2.6.0")]
