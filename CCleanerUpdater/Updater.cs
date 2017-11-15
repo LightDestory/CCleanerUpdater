@@ -282,7 +282,7 @@ namespace CCleanerUpdater
         {
             try
             {
-                CurrentVersion = FileVersionInfo.GetVersionInfo(path + "CCleaner.exe").FileVersion.Replace(",",".").Replace("00.","").Replace(" ", "");
+                CurrentVersion = FileVersionInfo.GetVersionInfo(path + "CCleaner.exe").FileVersion.Substring(0, 4).Replace(",", ".");
             }
             catch (Exception ex)
             {
@@ -307,7 +307,7 @@ namespace CCleanerUpdater
                 string html = webby.DownloadString(CCleaner.Links["Version"]);
                 int start = html.IndexOf(CCleaner.HTMLPrefix) + CCleaner.HTMLPrefix.Length;
                 int end = html.IndexOf(CCleaner.HTMLSuffix) - start;
-                OnlineVersion = html.Substring(start, end);
+                OnlineVersion = html.Substring(start, end).Substring(0,4);
             }
             catch (Exception ex)
             {
