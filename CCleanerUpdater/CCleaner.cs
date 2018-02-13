@@ -18,7 +18,7 @@ namespace CCleanerUpdater
 
         public static readonly Dictionary<string, string> Links = new Dictionary<string, string>()
             {
-                {"Version", "https://www.piriform.com/ccleaner/download"},{"Download", "http://download.piriform.com/ccsetup"}
+                {"Version", "https://www.piriform.com/ccleaner/download"},{"Download", "http://download.ccleaner.com/ccsetup"}
             };
 
         public const String HTMLPrefix = "<p><strong>v";
