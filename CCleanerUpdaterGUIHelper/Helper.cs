@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Windows.Forms;
 
@@ -31,6 +31,15 @@ namespace CCleanerUpdaterGUIHelper
         {
             InitializeComponent();
             Init();
+           
+            string x64DefaultPath = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles) + "\\CCleaner";
+            string x86DefaultPath = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86) + "\\CCleaner";
+            if (System.IO.Directory.Exists(x64DefaultPath)) {
+                CCPath.Text = x64DefaultPath;
+            }
+            else if (System.IO.Directory.Exists(x86DefaultPath)) {
+                CCPath.Text = x86DefaultPath;
+            }
         }
 
         private void Init()
