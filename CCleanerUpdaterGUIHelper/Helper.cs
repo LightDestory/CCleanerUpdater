@@ -31,14 +31,34 @@ namespace CCleanerUpdaterGUIHelper
         {
             InitializeComponent();
             Init();
-           
+        
+            DetectSystemLanguage();
+
             string x64DefaultPath = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles) + "\\CCleaner";
             string x86DefaultPath = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86) + "\\CCleaner";
-            if (System.IO.Directory.Exists(x64DefaultPath)) {
+
+            if (System.IO.Directory.Exists(x64DefaultPath))
+            {
                 CCPath.Text = x64DefaultPath;
             }
-            else if (System.IO.Directory.Exists(x86DefaultPath)) {
+            else if (System.IO.Directory.Exists(x86DefaultPath))
+            {
                 CCPath.Text = x86DefaultPath;
+            }
+        }
+
+        private void DetectSystemLanguage()
+        {
+            System.Globalization.CultureInfo ci = System.Globalization.CultureInfo.InstalledUICulture; 
+            string sysLang = ci.EnglishName.Split(' ')[0];
+
+            for (int i = 0; i < Languages.Length / 2; i++)
+            {
+                if (Languages[i, 0].Equals(sysLang))
+                {
+                    Lang.SelectedIndex = i;
+                    break;
+                }
             }
         }
 
